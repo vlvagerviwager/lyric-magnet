@@ -73,9 +73,6 @@
 			}
 
 			function exportFridge() {
-				// either use html2canvas, or convert the dom element to an image and export to the Save As... dialog
-				// http://jsfiddle.net/8ypxW/3/
-
 				html2canvas($("#fridge"), {
 					onrendered: function(canvas) {
 					theCanvas = canvas;
