@@ -1,0 +1,32 @@
+.horiz-menu {
+	float: left;
+	margin: 0 0 3em 0;
+	padding: 0;
+	list-style: none; 
+}
+
+.horiz-menu li {
+	padding: 8px 15px;
+	float: left; 
+}
+
+p {
+	border: 1px black solid; 
+	padding: 2px; 
+	margin: 5px;
+	-webkit-box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.75);
+	-moz-box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.75);
+	box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.75);
+	cursor: pointer; cursor: hand;
+	background-color: white;	
+	display: inline;
+}
+
+.fridge-style {
+	height: 400px; 
+	width: 600px; 
+	border: 2px black solid;
+	padding: 10px;
+	background-color: white;
+	clear: both;
+} 
