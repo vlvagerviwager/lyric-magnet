@@ -17,6 +17,7 @@
 		<script src="js/html2canvas.js" type="text/javascript"></script>
 		<script src="js/base64.js" type="text/javascript"></script>
 		<script src="js/canvas2image.js" type="text/javascript"></script>
+		<script src="js/scraping/magnets.js" type="text/javascript"></script>
 		
 		<!-- Mobile Specific Metas -->
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -26,81 +27,18 @@
 			<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 			<script src="excanvas.js"></script>
 		<![endif]-->
-		  
-		<script>
-			$(function() {
-				$( "#magnet" ).draggable();
-			});
-		</script> 
 		
-		<script type="text/javascript">
-			function createMagnet(text) {
-				// Create new magnet and set styling
-				var newMagnet = document.createElement("p");	
-				newMagnet.appendChild(text);
-				$(newMagnet).draggable();
-				return newMagnet;
-			}
-			
-			// Get and return array of text for magnets
-			function getWords(max) {
-				var site = $("#site").val();
-				// http://mikeygee.com/blog/scrape2.html
-				// http://scotch.io/tutorials/javascript/scraping-the-web-with-node-js
-
-				return ["telethon"];
-			}
-
-			// Get rid of duplicates, sort randomly (if more than max), and only return max number of words
-			function pruneWords(words, max) {
-
-			}
-			
-			function stickMagnet() {
-				var maxMagnets = $("#max").val();	
-				for(var i = 0; i < maxMagnets; i++) {
-					// Get the text and append to each magnet
-					var words = getWords(maxMagnets);	//TODO
-					
-					for(var j = 0; j < words.length; j++) {
-						var text = document.createTextNode(words[j]);
-						var newMagnet = createMagnet(text);
-					}
-				
-					// Stick magnets to fridge
-					$("#fridge").append(newMagnet);
-				}
-			}
-
-			function exportFridge() {
-				html2canvas($("#fridge"), {
-					onrendered: function(canvas) {
-					theCanvas = canvas;
-						document.body.appendChild(canvas);
-
-						// Convert and download as image 
-						Canvas2Image.saveAsPNG(canvas); 
-						$("#export").append(canvas);
-					
-						// Clean up 
-						document.body.removeChild(canvas);
-					}
-				});
-
-			}
-
-		</script>
 	</head>
 	
 	<body> 
 		<section id="play">
 		    <form class="horiz-menu">
 		       <fieldset>
-		            <input placeholder="Artist name">
+		            <input id="artist" placeholder="Artist name">
 
 		            <label>Select site</label>
 		            <select id ="site">
-		               <option value = "http://lyrics.wikia.com/Lyrics_Wiki">LyricWikia</option>
+		               <option value = "http://lyrics.wikia.com/">LyricWikia</option>
 		            </select>
 
 		            <input id="max" 
@@ -110,7 +48,7 @@
 						step="1"
 						value="5">
 
-					<input type="submit" value="play" onclick="stickMagnet(); return false;">
+					<input type="submit" value="play" onclick="generateMagnets(); return false;">
 					<input id="export" type="submit" value="save" onclick="exportFridge();">	<!-- export as image / interactive -->
 		       </fieldset>
 			</form>
@@ -122,7 +60,7 @@
 			</ul>
 		</nav>
 		<div id="fridge" class="fridge-style">
-			<script>stickMagnet()</script>
+			<script>generateMagnets()</script>
 		</div>
 
 		<div id="export"></div>
