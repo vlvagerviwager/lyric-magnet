@@ -14,7 +14,7 @@ function createMagnet(text) {
 function pruneWords(words, max) {
 	words = words.filter(function(elem, index, self) {
     	return index == self.indexOf(elem);
-	})
+	});
 
 	if(words.length > max) {
 		// sort randomly and only return the amount of max
@@ -23,38 +23,12 @@ function pruneWords(words, max) {
 	return words;
 }
 
-// Get and return array of text for magnets
-function scrapeLyricsByArtist(max) {
-	var site = $("#site").val();
-	var artist = $("#artist").val().replace(/\s+/g, "_");
-
-	// http://mikeygee.com/blog/scrape2.html
-	// http://blog.miguelgrinberg.com/post/easy-web-scraping-with-nodejs
-	// http://scotch.io/tutorials/javascript/scraping-the-web-with-node-js
-	// http://mherman.org/blog/2013/10/20/handling-ajax-calls-with-node-dot-js-and-express-scraping-craigslist/#.U8Q7_LGTKsg
-	
-	if(!artist) {
-		console.log("Usage: node lyrics_scrape.js [artist]");
-		return;
-	}
-
-	var url = site + artist;
-	
-	// scrape.js
-
-	var words = new Array();
-	words.push("telethon");
-
-	return words;
-}
-
-
 function generateMagnets() {
 	var maxMagnets = $("#max").val();	
 
 	for(var i = 0; i < maxMagnets; i++) {
 		// Get the text and append to each magnet
-		var words = scrapeLyricsByArtist(maxMagnets);	//TODO
+		var words = scrapeLyricsByArtist(maxMagnets);
 		
 		if(typeof words == 'undefined' || words.length < 1 ) {
 			console.log("No lyrics found - check artist entered");
@@ -69,6 +43,59 @@ function generateMagnets() {
 		// Stick magnets to fridge
 		$("#fridge").append(newMagnet);
 	}
+}
+
+// Capitalize each word and remove white spaces from artist input
+function prepareArtistInput(artist) {
+	var result = artist;
+	var words = artist.split(/\s+/);
+
+	if (words.length > 0) {
+	 	result = "";
+		words.forEach(function(word) {
+		    result += word.charAt(0).toUpperCase() + word.slice(1);
+			result += " ";
+		});
+ 	}
+ 	return result.replace(/\s+/g, "_");
+}
+
+// Get and return array of text for magnets
+// jsfiddle.net/jalbertbowdenii/zxkax/
+function scrapeLyricsByArtist(max) {
+	var site = $("#site").val();
+	var artist = prepareArtistInput($("#artist").val());
+
+	if(!artist) {
+		console.log("Usage: node lyrics_scrape.js [artist]");
+		return;
+	}
+
+	var baseUrl = site + artist;
+	var lyrics = new Array();
+	
+	$.ajax({
+	    url: baseUrl,
+		type: "GET",
+	    success: function(data) {
+	    	console.log(data.responseText);
+	        var songs = $("div").html(data)[0].getElementsByTagName("ol")[0].getElementsByTagName("li");
+	        if(songs.length > 0) { 
+				for(var i = 0; i < songs.length; i++) {
+					// var theText = songs[i].firstChild.nodeValue;
+					console.log(songs[i]);
+				}
+	        }
+	    },
+
+		error: function(status) {
+			console.log("Request error: " + status + " " + url);
+		}
+	});
+
+	lyrics.push("telethon");	// TODO for testing
+
+	return lyrics;
 }
 
 function exportFridge() {
