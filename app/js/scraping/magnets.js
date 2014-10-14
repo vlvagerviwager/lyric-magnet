@@ -10,25 +10,12 @@ function createMagnet(text) {
 	return newMagnet;
 }
 
-// Get rid of duplicates, sort randomly (if more than max), and only return max number of words
-function pruneWords(words, max) {
-	words = words.filter(function(elem, index, self) {
-    	return index == self.indexOf(elem);
-	});
-
-	if(words.length > max) {
-		// sort randomly and only return the amount of max
-	}
-
-	return words;
-}
-
 function generateMagnets() {
 	var maxMagnets = $("#max").val();	
 
 	for(var i = 0; i < maxMagnets; i++) {
 		// Get the text and append to each magnet
-		var words = scrapeLyricsByArtist(maxMagnets);
+		var words = scrapeSongsByArtist(maxMagnets);
 		
 		if(typeof words == 'undefined' || words.length < 1 ) {
 			console.log("No lyrics found - check artist entered");
@@ -60,10 +47,12 @@ function prepareArtistInput(artist) {
  	return result.replace(/\s+/g, "_");
 }
 
-// Get and return array of text for magnets
-// jsfiddle.net/jalbertbowdenii/zxkax/
-function scrapeLyricsByArtist(max) {
-	var site = $("#site").val();
+function getSite() {
+	return $("#site").val();
+}
+
+function getLyricsPage() {
+	var site = getSite();
 	var artist = prepareArtistInput($("#artist").val());
 
 	if(!artist) {
@@ -71,21 +60,35 @@ function scrapeLyricsByArtist(max) {
 		return;
 	}
 
-	var baseUrl = site + artist;
-	var lyrics = new Array();
+	var baseUrl = site + "/" + artist;
+}
+
+// Get a list of songs from artist lyric page
+// jsfiddle.net/jalbertbowdenii/zxkax/
+function scrapeSongsByArtist(max) {
+
+	var baseUrl = getLyricsPage();
+	var songs = new Array();
 	
 	$.ajax({
 	    url: baseUrl,
 		type: "GET",
 	    success: function(data) {
-	    	console.log(data.responseText);
-	        var songs = $("div").html(data)[0].getElementsByTagName("ol")[0].getElementsByTagName("li");
-	        if(songs.length > 0) { 
-				for(var i = 0; i < songs.length; i++) {
-					// var theText = songs[i].firstChild.nodeValue;
-					console.log(songs[i]);
-				}
-	        }
+
+            // load the response into jquery element
+            // form tags are needed to get the entire html, head, and body
+            $foop = $('<form>' + data.responseText + '</form>');
+            //console.log(data.responseText);
+
+            // find links
+            $.each($foop.find('a[href]'), function(idx, item) {
+                lnk = $(item).attr("href");
+                console.log(lnk);
+                // TODO DO SOME FILTERING HERE BEFORE PUSHING - ONLY PUSH SONGS
+                songs.push(lnk);
+            });
+
+			scrapeLyricsFromSongs(songs, max);
 	    },
 
 		error: function(status) {
@@ -93,7 +96,64 @@ function scrapeLyricsByArtist(max) {
 		}
 	});
 
-	lyrics.push("telethon");	// TODO for testing
+	songs.push("telethon");	// TODO for testing
+
+	return songs;
+}
+
+// Get rid of duplicates, sort randomly (if more than max), and only return max number of words
+function pruneWords(words, max) {
+	words = words.filter(function(elem, index, self) {
+    	return index == self.indexOf(elem);
+	});
+
+	if(words.length > max) {
+		// sort randomly and only return the amount of max
+	}
+
+	return words;
+}
+
+// Get a list of words from the lyrics of all songs by an artist
+function scrapeLyricsFromSongs(songUrls, max) {
+
+	var words = new Array();
+	
+	for(var i = 0; i < songs.length; i++) {
+		var songUrl = getSite() + songUrls[i];
+		words.push(scrapeLyricsFromSong(songUrl));
+	}
+
+	return pruneWords(words, max);
+}
+
+// TODO Get a list of words from a song lyric page
+function scrapeLyricsFromSong(songUrl) {
+
+	var lyrics = new Array();
+	
+	$.ajax({
+	    url: songUrl,
+		type: "GET",
+	    success: function(data) {
+
+            // load the response into jquery element
+            // form tags are needed to get the entire html, head, and body
+            $foop = $('<form>' + data.responseText + '</form>');
+            //console.log(data.responseText);
+
+            // grab all lyrics, push each word
+            $.each($foop.find('a[href]'), function(idx, item) {
+                lnk = $(item).attr("href");
+                console.log(lnk);
+                lyrics.push("");
+            });
+	    },
+
+		error: function(status) {
+			console.log("Request error: " + status + " " + url);
+		}
+	});
 
 	return lyrics;
 }
@@ -103,7 +163,7 @@ function exportFridge() {
 		onrendered: function(canvas) {
 		theCanvas = canvas;
 			document.body.appendChild(canvas);
-				// Convert and download as image 
+			// Convert and download as image 
 			Canvas2Image.saveAsPNG(canvas); 
 			$("#export").append(canvas);
 		
